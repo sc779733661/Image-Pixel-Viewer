@@ -47,13 +47,13 @@
 1. 克隆仓库：
 
    ```
-   git clone https://github.com/yourusername/image-pixel-viewer.git
+   git clone https://github.com/sc779733661/Image-Pixel-Viewer.git
    ```
 
 2. 进入项目目录：
 
    ```
-   cd image-pixel-viewer
+   cd Image-Pixel-Viewer
    ```
 
 3. 在浏览器中打开 `index.html`文件
@@ -129,7 +129,7 @@
 ## 📁 项目结构
 
 ```
-image-pixel-viewer/
+Image-Pixel-Viewer/
 ├── index.html          # 主页面文件
 ├── README.md           # 项目说明文档
 ├── LICENSE            # 开源协议
@@ -168,7 +168,7 @@ image-pixel-viewer/
 
 ```
 # 克隆项目
-git clone https://github.com/yourusername/image-pixel-viewer.git
+git clone https://github.com/sc779733661/Image-Pixel-Viewer.git
 
 # 使用本地服务器运行（可选）
 python -m http.server 8000
@@ -218,8 +218,8 @@ SOFTWARE.
 
 ## 📞 联系方式
 
-* **项目主页** : [https://github.com/yourusername/image-pixel-viewer](https://github.com/yourusername/image-pixel-viewer)
-* **问题反馈** : [https://github.com/yourusername/image-pixel-viewer/issues](https://github.com/yourusername/image-pixel-viewer/issues)
+* **项目主页** : [https://github.com/sc779733661/Image-Pixel-Viewer](https://github.com/sc779733661/Image-Pixel-Viewer)
+* **问题反馈** : [https://github.com/sc779733661/Image-Pixel-Viewer/issues](https://github.com/sc779733661/Image-Pixel-Viewer/issues)
 * **邮箱联系** : <your.email@example.com>
 * **讨论群组** : [Discord/Slack链接]
 
