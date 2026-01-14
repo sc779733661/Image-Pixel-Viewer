@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级图像像素查看工具 - 全面支持PGM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50, #1a2a6c);
+            color: #ecf0f1;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(25, 35, 65, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            margin-top: 20px;
+            border: 1px solid #3498db;
+        }
+        
+        header {
+            text-align: center;
+            padding: 25px 20px;
+            background: rgba(15, 25, 55, 0.95);
+            border-bottom: 2px solid #3498db;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #3498db, #2ecc71, #3498db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            color: #bdc3c7;
+            font-size: 1.15rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+        
+        .format-badges {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .format-badge {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid #3498db;
+            border-radius: 20px;
+            padding: 6px 15px;
+            font-size: 0.9rem;
+            color: #3498db;
+            font-weight: 600;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 320px;
+            background: rgba(20, 30, 60, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 1px solid #2980b9;
+        }
+        
+        .panel-section {
+            background: rgba(15, 25, 55, 0.6);
+            border-radius: 10px;
+            padding: 18px;
+            border: 1px solid #1abc9c;
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+            color: #1abc9c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            font-size: 1.5rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        button {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            background: linear-gradient(to right, #3ca0db, #2c8bc9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button.reset {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+        
+        button.reset:hover {
+            background: linear-gradient(to right, #ec7063, #d35400);
+        }
+        
+        button.grid {
+            background: linear-gradient(to right, #9b59b6, #8e44ad);
+        }
+        
+        button.grid:hover {
+            background: linear-gradient(to right, #af7ac5, #9b59b6);
+        }
+        
+        .info-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .info-item {
+            background: rgba(25, 45, 85, 0.6);
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            border: 1px solid #34495e;
+        }
+        
+        .info-label {
+            color: #1abc9c;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .info-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #3498db;
+            word-break: break-all;
+        }
+        
+        .canvas-container {
+            flex: 2;
+            min-width: 500px;
+            position: relative;
+            background: #0c1424;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            height: 650px;
+            border: 1px solid #2c3e50;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+        }
+        
+        .grid-canvas {
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            z-index: 20;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #3498db;
+        }
+        
+        .instructions {
+            margin: 20px;
+            padding: 20px;
+            background: rgba(15, 25, 55, 0.7);
+            border-radius: 12px;
+            border-left: 4px solid #1abc9c;
+        }
+        
+        .instructions h3 {
+            color: #1abc9c;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .instructions ul {
+            padding-left: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .instructions code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #f39c12;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .feature {
+            background: rgba(44, 62, 80, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .pgm-instructions {
+            background: rgba(155, 89, 182, 0.2);
+            border: 1px solid #9b59b6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .pgm-instructions h4 {
+            color: #9b59b6;
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px 20px;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            margin-top: 20px;
+            border-top: 1px solid #34495e;
+            width: 100%;
+        }
+        
+        .zoom-indicator {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 20;
+            border: 1px solid #3498db;
+        }
+        
+        .color-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 1px solid #7f8c8d;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .download-sample {
+            margin-top: 10px;
+            display: inline-block;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .canvas-container {
+                height: 500px;
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>高级图像像素查看工具</h1>
+            <p class="subtitle">全面支持所有主流图像格式(BMP, JPG, JPEG, PNG, PGM等)，可放大至单个像素级别，实时显示像素坐标、RGB值和尺寸信息</p>
+            <div class="format-badges">
+                <div class="format-badge">BMP</div>
+                <div class="format-badge">JPG</div>
+                <div class="format-badge">JPEG</div>
+                <div class="format-badge">PNG</div>
+                <div class="format-badge">PGM</div>
+                <div class="format-badge">GIF</div>
+                <div class="format-badge">WEBP</div>
+                <div class="format-badge">TIFF</div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="panel-section">
+                    <h2 class="section-title">📁 图像导入</h2>
+                    <div class="btn-group">
+                        <button id="uploadBtn">
+                            <span>上传图像</span>
+                        </button>
+                        <button id="sampleBtn">
+                            <span>使用示例图像</span>
+                        </button>
+                        <button id="pgmSampleBtn">
+                            <span>下载PGM示例</span>
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*,.pgm" style="display: none;">
+                    
+                    <div id="errorMessage" class="error-message"></div>
+                    <div id="successMessage" class="success-message"></div>
+                    
+                    <div class="pgm-instructions">
+                        <h4>PGM文件上传说明</h4>
+                        <p>本工具支持两种PGM格式：</p>
+                        <ul>
+                            <li><strong>P2 (ASCII格式)</strong> - 文本可读的PGM文件</li>
+                            <li><strong>P5 (二进制格式)</strong> - 二进制PGM文件</li>
+                        </ul>
+                        <p>如果上传失败，请尝试下载示例PGM文件测试。</p>
+                        <a href="#" id="downloadSample" class="download-sample">下载示例PGM文件</a>
+                    </div>
+                </div>
+                
+                <div class="panel-section">
+                    <h2 class="section-title">🔍 像素信息</h2>
+                    <div class="info-display">
+                        <div class="info-item">
+                            <div class="info-label">坐标</div>
+                            <div id="coordValue" class="info-value">(0, 0)</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">RGB 值</div>
+                            <div id="rgbValue" class="info-value">(0, 0, 0)</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">像素大小</div>
+                            <div id="pixelSizeValue" class="info-value">1×1 px</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">缩放比例</div>
+                            <div id="zoomValue" class="info-value">100%</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">图像尺寸</div>
+                            <div id="sizeValue" class="info-value">0 × 0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">文件格式</div>
+                            <div id="formatValue" class="info-value">-</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <span>颜色预览:</span>
+                        <div id="colorPreview" class="color-preview" style="background: #000;"></div>
+                    </div>
+                </div>
+                
+                <div class="panel-section">
+                    <h2 class="section-title">⚙️ 视图控制</h2>
+                    <div class="btn-group">
+                        <button id="zoomInBtn">
+                            <span>放大 +</span>
+                        </button>
+                        <button id="zoomOutBtn">
+                            <span>缩小 -</span>
+                        </button>
+                        <button id="resetViewBtn" class="reset">
+                            <span>重置视图</span>
+                        </button>
+                        <button id="toggleGridBtn" class="grid">
+                            <span>网格: 开</span>
+                        </button>
+                    </div>
+                    <p style="margin-top: 15px; color: #bdc3c7; font-size: 0.95rem;">
+                        提示：使用鼠标滚轮缩放，按住左键拖动平移<br>
+                        最大放大倍数: 1600%
+                    </p>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="mainCanvas"></canvas>
+                <canvas id="gridCanvas" class="grid-canvas"></canvas>
+                <div class="zoom-indicator">缩放: <span id="zoomIndicator">100%</span></div>
+                <div class="status-bar">
+                    <div>状态: <span id="statusText">就绪</span></div>
+                    <div>像素网格: <span id="gridStatus">开启</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>使用说明</h3>
+            <ul>
+                <li><strong>导入图像</strong> - 点击"上传图像"按钮选择本地图片，或使用"使用示例图像"</li>
+                <li><strong>PGM文件</strong> - 支持P2(ASCII)和P5(二进制)格式，点击"下载PGM示例"获取测试文件</li>
+                <li><strong>查看像素信息</strong> - 在图像上移动鼠标，实时显示坐标、RGB值和像素大小</li>
+                <li><strong>平移视图</strong> - 按住鼠标左键并拖动图像</li>
+                <li><strong>缩放视图</strong> - 使用鼠标滚轮，或点击放大/缩小按钮 (最大1600%)</li>
+                <li><strong>网格显示</strong> - 点击"网格"按钮切换像素网格显示</li>
+                <li><strong>重置视图</strong> - 点击"重置视图"按钮恢复原始大小和位置</li>
+                <li><strong>快捷键</strong> - <code>+</code> 放大, <code>-</code> 缩小, <code>0</code> 重置视图, <code>G</code> 切换网格</li>
+            </ul>
+            
+            <div class="features">
+                <div class="feature">
+                    <strong>全格式支持</strong>: BMP, JPG, JPEG, PNG, PGM(P2/P5), GIF, WEBP, TIFF
+                </div>
+                <div class="feature">
+                    <strong>像素级放大</strong>: 可放大至1600%，清晰查看每个像素
+                </div>
+                <div class="feature">
+                    <strong>实时信息</strong>: 坐标、RGB值、像素大小实时显示
+                </div>
+                <div class="feature">
+                    <strong>网格辅助</strong>: 可切换显示像素网格线
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2023 高级图像像素查看工具 | 基于浏览器的单文件应用 | 全面支持PGM格式</p>
+    </footer>
+
+    <script>
+        // 获取DOM元素
+        const mainCanvas = document.getElementById('mainCanvas');
+        const gridCanvas = document.getElementById('gridCanvas');
+        const mainCtx = mainCanvas.getContext('2d');
+        const gridCtx = gridCanvas.getContext('2d');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const sampleBtn = document.getElementById('sampleBtn');
+        const pgmSampleBtn = document.getElementById('pgmSampleBtn');
+        const downloadSample = document.getElementById('downloadSample');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const resetViewBtn = document.getElementById('resetViewBtn');
+        const toggleGridBtn = document.getElementById('toggleGridBtn');
+        const coordValue = document.getElementById('coordValue');
+        const rgbValue = document.getElementById('rgbValue');
+        const pixelSizeValue = document.getElementById('pixelSizeValue');
+        const zoomValue = document.getElementById('zoomValue');
+        const zoomIndicator = document.getElementById('zoomIndicator');
+        const sizeValue = document.getElementById('sizeValue');
+        const formatValue = document.getElementById('formatValue');
+        const colorPreview = document.getElementById('colorPreview');
+        const statusText = document.getElementById('statusText');
+        const gridStatus = document.getElementById('gridStatus');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        
+        // 状态变量
+        let img = null;
+        let scale = 1.0;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let lastX = 0;
+        let lastY = 0;
+        let imgWidth = 0;
+        let imgHeight = 0;
+        let showGrid = true;
+        let fileName = '';
+        let fileType = '';
+        
+        // 初始化画布
+        function initCanvas() {
+            const container = mainCanvas.parentElement;
+            mainCanvas.width = container.clientWidth;
+            mainCanvas.height = container.clientHeight;
+            gridCanvas.width = container.clientWidth;
+            gridCanvas.height = container.clientHeight;
+            drawImage();
+            drawGrid();
+        }
+        
+        // 绘制图像
+        function drawImage() {
+            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            
+            if (!img) {
+                // 绘制占位符
+                mainCtx.fillStyle = '#0c1424';
+                mainCtx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+                
+                mainCtx.strokeStyle = '#3498db';
+                mainCtx.lineWidth = 2;
+                mainCtx.setLineDash([5, 5]);
+                mainCtx.strokeRect(mainCanvas.width/2 - 120, mainCanvas.height/2 - 90, 240, 180);
+                mainCtx.setLineDash([]);
+                
+                mainCtx.font = '20px Arial';
+                mainCtx.fillStyle = '#3498db';
+                mainCtx.textAlign = 'center';
+                mainCtx.fillText('请上传图像或使用示例图像', mainCanvas.width/2, mainCanvas.height/2 - 20);
+                
+                mainCtx.font = '16px Arial';
+                mainCtx.fillStyle = '#7f8c8d';
+                mainCtx.fillText('支持格式: BMP, JPG, JPEG, PNG, PGM等', mainCanvas.width/2, mainCanvas.height/2 + 20);
+                return;
+            }
+            
+            // 保存当前状态
+            mainCtx.save();
+            
+            // 应用平移和缩放
+            mainCtx.translate(offsetX, offsetY);
+            mainCtx.scale(scale, scale);
+            
+            // 禁用图像平滑以实现像素级渲染
+            mainCtx.imageSmoothingEnabled = false;
+            
+            // 绘制图像
+            mainCtx.drawImage(img, 0, 0);
+            
+            // 恢复状态
+            mainCtx.restore();
+        }
+        
+        // 绘制网格
+        function drawGrid() {
+            if (!showGrid || !img) {
+                gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+                return;
+            }
+            
+            gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+            gridCtx.strokeStyle = 'rgba(52, 152, 219, 0.3)';
+            gridCtx.lineWidth = 1;
+            
+            // 计算网格起点和步长
+            const startX = Math.floor(-offsetX / scale) * scale + offsetX;
+            const startY = Math.floor(-offsetY / scale) * scale + offsetY;
+            const stepX = scale;
+            const stepY = scale;
+            
+            // 绘制垂直线
+            for (let x = startX; x < gridCanvas.width; x += stepX) {
+                gridCtx.beginPath();
+                gridCtx.moveTo(x, 0);
+                gridCtx.lineTo(x, gridCanvas.height);
+                gridCtx.stroke();
+            }
+            
+            // 绘制水平线
+            for (let y = startY; y < gridCanvas.height; y += stepY) {
+                gridCtx.beginPath();
+                gridCtx.moveTo(0, y);
+                gridCtx.lineTo(gridCanvas.width, y);
+                gridCtx.stroke();
+            }
+        }
+        
+        // 加载图像
+        function loadImage(src, name = '', type = '') {
+            statusText.textContent = '加载图像中...';
+            hideMessages();
+            
+            // 如果是PGM文件，使用特殊处理
+            if (type === 'pgm' || (name && name.toLowerCase().endsWith('.pgm'))) {
+                loadPGMImage(src, name);
+                return;
+            }
+            
+            img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = function() {
+                handleImageLoad(this, name, type);
+            };
+            img.onerror = function() {
+                showError("无法加载图像，请尝试其他文件");
+                statusText.textContent = '加载失败';
+            };
+            img.src = src;
+            fileName = name;
+            fileType = type;
+        }
+        
+        // 加载PGM图像 - 增强版
+        function loadPGMImage(src, name) {
+            statusText.textContent = '解析PGM图像...';
+            
+            // 确定文件类型（P2或P5）
+            const isBinary = name.toLowerCase().endsWith('.p5.pgm') || 
+                             (src instanceof ArrayBuffer && isP5Format(src));
+            
+            if (src instanceof File) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (isBinary) {
+                        parseP5Format(e.target.result, name);
+                    } else {
+                        parseP2Format(e.target.result, name);
+                    }
+                };
+                reader.readAsArrayBuffer(src);
+            } else if (src instanceof ArrayBuffer) {
+                if (isBinary) {
+                    parseP5Format(src, name);
+                } else {
+                    parseP2Format(src, name);
+                }
+            } else {
+                // 如果是URL，需要先获取内容
+                fetch(src)
+                    .then(response => response.arrayBuffer())
+                    .then(data => {
+                        if (isBinary) {
+                            parseP5Format(data, name);
+                        } else {
+                            parseP2Format(data, name);
+                        }
+                    })
+                    .catch(error => {
+                        showError("加载PGM文件失败: " + error.message);
+                        statusText.textContent = '加载失败';
+                    });
+            }
+        }
+        
+        // 检查是否为P5格式
+        function isP5Format(buffer) {
+            if (buffer.byteLength < 2) return false;
+            const header = new Uint8Array(buffer.slice(0, 2));
+            return header[0] === 80 && header[1] === 53; // 'P' and '5'
+        }
+        
+        // 解析P2格式(PGM ASCII)
+        function parseP2Format(data, name) {
+            try {
+                // 将ArrayBuffer转换为文本
+                const decoder = new TextDecoder('ascii');
+                const content = decoder.decode(data);
+                const lines = content.split(/[\r\n]+/);
+                
+                let width = 0;
+                let height = 0;
+                let maxVal = 255;
+                let pixelData = [];
+                let readingPixels = false;
+                
+                // 解析头部
+                for (let line of lines) {
+                    line = line.trim();
+                    
+                    // 跳过空行和注释
+                    if (!line || line.startsWith('#')) continue;
+                    
+                    if (!readingPixels) {
+                        if (line.startsWith('P2')) {
+                            continue; // 格式标识
+                        }
+                        
+                        const parts = line.split(/\s+/);
+                        if (parts.length >= 2) {
+                            if (width === 0) {
+                                width = parseInt(parts[0]);
+                                height = parseInt(parts[1]);
+                            } else if (maxVal === 255) {
+                                maxVal = parseInt(parts[0]);
+                            }
+                            
+                            // 如果已获取所有头部信息，开始读取像素
+                            if (width > 0 && height > 0 && maxVal !== 255) {
+                                readingPixels = true;
+                            }
+                        }
+                    } else {
+                        // 读取像素数据
+                        const values = line.split(/\s+/).filter(val => val !== '');
+                        for (const val of values) {
+                            pixelData.push(parseInt(val));
+                        }
+                    }
+                }
+                
+                // 验证数据
+                if (width <= 0 || height <= 0) {
+                    throw new Error("无效的PGM头部: 缺少宽度或高度");
+                }
+                
+                if (pixelData.length !== width * height) {
+                    throw new Error(`像素数据不匹配: 期望 ${width * height} 个值，得到 ${pixelData.length}`);
+                }
+                
+                createImageFromPGM(pixelData, width, height, name, 'P2');
+            } catch (error) {
+                showError("解析P2格式失败: " + error.message);
+                statusText.textContent = '解析失败';
+            }
+        }
+        
+        // 解析P5格式(PGM二进制)
+        function parseP5Format(data, name) {
+            try {
+                const buffer = data instanceof ArrayBuffer ? data : data.buffer;
+                const view = new DataView(buffer);
+                let offset = 0;
+                
+                // 检查魔术字 "P5"
+                if (view.getUint8(offset) !== 80 || view.getUint8(offset+1) !== 53) {
+                    throw new Error("无效的P5格式: 魔术字应为P5");
+                }
+                offset += 2;
+                
+                // 跳过注释和空白
+                while (offset < buffer.byteLength) {
+                    const byte = view.getUint8(offset);
+                    if (byte === 35) { // '#' 注释开始
+                        while (offset < buffer.byteLength && view.getUint8(offset) !== 10) {
+                            offset++;
+                        }
+                    } else if (byte === 10 || byte === 13 || byte === 9 || byte === 32) {
+                        offset++; // 跳过空白
+                    } else {
+                        break; // 找到非空白字符
+                    }
+                }
+                
+                // 读取宽度
+                let width = '';
+                while (offset < buffer.byteLength) {
+                    const byte = view.getUint8(offset);
+                    if (byte === 32 || byte === 10 || byte === 13) break;
+                    width += String.fromCharCode(byte);
+                    offset++;
+                }
+                offset++; // 跳过分隔符
+                
+                // 读取高度
+                let height = '';
+                while (offset < buffer.byteLength) {
+                    const byte = view.getUint8(offset);
+                    if (byte === 32 || byte === 10 || byte === 13) break;
+                    height += String.fromCharCode(byte);
+                    offset++;
+                }
+                offset++; // 跳过分隔符
+                
+                // 读取最大灰度值
+                let maxVal = '';
+                while (offset < buffer.byteLength) {
+                    const byte = view.getUint8(offset);
+                    if (byte === 10 || byte === 13) break;
+                    maxVal += String.fromCharCode(byte);
+                    offset++;
+                }
+                offset++; // 跳过换行符
+                
+                width = parseInt(width);
+                height = parseInt(height);
+                maxVal = parseInt(maxVal);
+                
+                if (isNaN(width) || isNaN(height) || isNaN(maxVal)) {
+                    throw new Error("无效的PGM头部: 宽度、高度或最大值无效");
+                }
+                
+                if (maxVal > 255) {
+                    throw new Error("不支持的PGM格式: 最大灰度值大于255");
+                }
+                
+                // 读取像素数据
+                const pixelCount = width * height;
+                const pixels = new Uint8Array(buffer, offset, pixelCount);
+                
+                // 转换为RGB数组
+                const rgbData = [];
+                for (let i = 0; i < pixelCount; i++) {
+                    const gray = pixels[i];
+                    rgbData.push(gray, gray, gray); // R, G, B
+                }
+                
+                createImageFromPGM(rgbData, width, height, name, 'P5');
+            } catch (error) {
+                showError("解析P5格式失败: " + error.message);
+                statusText.textContent = '解析失败';
+            }
+        }
+        
+        // 从PGM数据创建图像
+        function createImageFromPGM(pixelData, width, height, name, format) {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.createImageData(width, height);
+                
+                // 填充像素数据
+                if (format === 'P2') {
+                    // P2格式数据是灰度值数组
+                    for (let i = 0; i < pixelData.length; i++) {
+                        const gray = pixelData[i];
+                        const idx = i * 4;
+                        imageData.data[idx] = gray;     // R
+                        imageData.data[idx+1] = gray;   // G
+                        imageData.data[idx+2] = gray;   // B
+                        imageData.data[idx+3] = 255;     // A
+                    }
+                } else {
+                    // P5格式数据已经是RGB数组
+                    for (let i = 0; i < pixelData.length; i++) {
+                        imageData.data[i] = pixelData[i];
+                    }
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                
+                // 创建图像对象
+                const imgObj = new Image();
+                imgObj.onload = function() {
+                    handleImageLoad(imgObj, name, 'PGM');
+                    showSuccess("PGM图像加载成功: " + name);
+                };
+                imgObj.src = canvas.toDataURL('image/png');
+            } catch (error) {
+                showError("创建图像失败: " + error.message);
+                statusText.textContent = '创建失败';
+            }
+        }
+        
+        // 处理图像加载完成
+        function handleImageLoad(image, name, type) {
+            img = image;
+            imgWidth = img.width;
+            imgHeight = img.height;
+            sizeValue.textContent = `${imgWidth} × ${imgHeight}`;
+            formatValue.textContent = type || getFormatFromName(name);
+            
+            // 初始缩放以适应画布
+            const scaleX = mainCanvas.width / imgWidth;
+            const scaleY = mainCanvas.height / imgHeight;
+            scale = Math.min(scaleX, scaleY) * 0.9;
+            offsetX = (mainCanvas.width - imgWidth * scale) / 2;
+            offsetY = (mainCanvas.height - imgHeight * scale) / 2;
+            
+            updateZoomDisplay();
+            drawImage();
+            drawGrid();
+            statusText.textContent = '就绪';
+        }
+        
+        // 从文件名获取格式
+        function getFormatFromName(name) {
+            if (!name) return '未知';
+            const ext = name.split('.').pop().toUpperCase();
+            return ext || '未知';
+        }
+        
+        // 更新缩放显示
+        function updateZoomDisplay() {
+            const zoomPercent = Math.round(scale * 100);
+            zoomValue.textContent = `${zoomPercent}%`;
+            zoomIndicator.textContent = `${zoomPercent}%`;
+        }
+        
+        // 获取鼠标在图像上的位置
+        function getImagePosition(clientX, clientY) {
+            const rect = mainCanvas.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            
+            // 转换为图像坐标
+            const imgX = Math.floor((x - offsetX) / scale);
+            const imgY = Math.floor((y - offsetY) / scale);
+            
+            return { 
+                x: imgX, 
+                y: imgY, 
+                inImage: imgX >= 0 && imgX < imgWidth && imgY >= 0 && imgY < imgHeight,
+                screenX: x,
+                screenY: y
+            };
+        }
+        
+        // 获取像素颜色
+        function getPixelColor(x, y) {
+            if (!img || x < 0 || x >= imgWidth || y < 0 || y >= imgHeight) {
+                return [0, 0, 0];
+            }
+            
+            // 创建临时canvas获取像素数据
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = imgWidth;
+            tempCanvas.height = imgHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(img, 0, 0);
+            
+            const pixelData = tempCtx.getImageData(x, y, 1, 1).data;
+            return [pixelData[0], pixelData[1], pixelData[2]];
+        }
+        
+        // 显示错误消息
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+        
+        // 显示成功消息
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+        
+        // 隐藏消息
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+        
+        // 生成PGM示例文件
+        function generatePGMSample() {
+            // 创建一个简单的5x5 PGM图像
+            const width = 5;
+            const height = 5;
+            const maxVal = 255;
+            
+            // 创建P2格式内容
+            let content = "P2\n";
+            content += `# 5x5 PGM Sample\n`;
+            content += `${width} ${height}\n`;
+            content += `${maxVal}\n`;
+            
+            // 添加像素数据
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    // 创建渐变效果
+                    const value = Math.floor(255 * (x + y) / (width + height - 2));
+                    content += value + " ";
+                }
+                content += "\n";
+            }
+            
+            return content;
+        }
+        
+        // 事件监听器
+        uploadBtn.addEventListener('click', () => fileInput.click());
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+                const fileName = file.name.toLowerCase();
+                const fileExt = fileName.split('.').pop();
+                
+                hideMessages();
+                
+                if (['bmp', 'jpg', 'jpeg', 'png', 'pgm', 'gif', 'webp', 'tiff'].includes(fileExt)) {
+                    if (fileExt === 'pgm') {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            loadPGMImage(event.target.result, file.name);
+                        };
+                        reader.readAsArrayBuffer(file);
+                    } else {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            loadImage(event.target.result, file.name, fileExt);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                } else {
+                    showError("不支持的文件格式: " + fileExt);
+                }
+            }
+        });
+        
+        sampleBtn.addEventListener('click', () => {
+            // 使用内置的示例图像
+            const formats = ['jpg', 'png', 'bmp'];
+            const randomFormat = formats[Math.floor(Math.random() * formats.length)];
+            loadImage(`https://picsum.photos/800/600?random=${Math.floor(Math.random()*1000)}`, `sample.${randomFormat}`, randomFormat);
+        });
+        
+        pgmSampleBtn.addEventListener('click', () => {
+            // 生成并下载PGM示例文件
+            const content = generatePGMSample();
+            const blob = new Blob([content], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sample.pgm';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showSuccess("示例PGM文件已下载: sample.pgm (5x5 P2格式)");
+        });
+        
+        downloadSample.addEventListener('click', (e) => {
+            e.preventDefault();
+            pgmSampleBtn.click();
+        });
+        
+        zoomInBtn.addEventListener('click', () => {
+            if (scale < 16) { // 最大1600%
+                scale *= 1.2;
+                updateZoomDisplay();
+                drawImage();
+                drawGrid();
+            }
+        });
+        
+        zoomOutBtn.addEventListener('click', () => {
+            if (scale > 0.1) { // 最小10%
+                scale /= 1.2;
+                updateZoomDisplay();
+                drawImage();
+                drawGrid();
+            }
+        });
+        
+        resetViewBtn.addEventListener('click', () => {
+            if (img) {
+                scale = 1.0;
+                offsetX = 0;
+                offsetY = 0;
+                updateZoomDisplay();
+                drawImage();
+                drawGrid();
+            }
+        });
+        
+        toggleGridBtn.addEventListener('click', () => {
+            showGrid = !showGrid;
+            toggleGridBtn.innerHTML = showGrid ? '<span>网格: 开</span>' : '<span>网格: 关</span>';
+            gridStatus.textContent = showGrid ? '开启' : '关闭';
+            drawGrid();
+        });
+        
+        // 鼠标事件
+        mainCanvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            mainCanvas.style.cursor = 'grabbing';
+        });
+        
+        mainCanvas.addEventListener('mousemove', (e) => {
+            // 拖动处理
+            if (isDragging) {
+                offsetX += e.clientX - lastX;
+                offsetY += e.clientY - lastY;
+                lastX = e.clientX;
+                lastY = e.clientY;
+                drawImage();
+                drawGrid();
+                return;
+            }
+            
+            // 像素信息显示
+            if (img) {
+                const pos = getImagePosition(e.clientX, e.clientY);
+                coordValue.textContent = `(${pos.x}, ${pos.y})`;
+                
+                if (pos.inImage) {
+                    const [r, g, b] = getPixelColor(pos.x, pos.y);
+                    rgbValue.textContent = `(${r}, ${g}, ${b})`;
+                    rgbValue.style.color = `rgb(${r}, ${g}, ${b})`;
+                    colorPreview.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+                    
+                    // 计算像素在屏幕上的大小
+                    const pixelScreenSize = Math.max(1, Math.round(scale));
+                    pixelSizeValue.textContent = `${pixelScreenSize}×${pixelScreenSize} px`;
+                } else {
+                    rgbValue.textContent = '(0, 0, 0)';
+                    rgbValue.style.color = '#3498db';
+                    colorPreview.style.backgroundColor = '#000';
+                    pixelSizeValue.textContent = '0×0 px';
+                }
+            }
+        });
+        
+        mainCanvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            mainCanvas.style.cursor = 'crosshair';
+        });
+        
+        mainCanvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            mainCanvas.style.cursor = 'default';
+        });
+        
+        // 滚轮缩放
+        mainCanvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            const zoomIntensity = 0.1;
+            const wheel = e.deltaY < 0 ? 1 : -1;
+            const zoomFactor = Math.exp(wheel * zoomIntensity);
+            const newScale = scale * zoomFactor;
+            
+            // 限制缩放范围
+            if (newScale < 0.1 || newScale > 16) return;
+            
+            // 计算缩放前后的坐标
+            const rect = mainCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const imgPosBefore = {
+                x: (mouseX - offsetX) / scale,
+                y: (mouseY - offsetY) / scale
+            };
+            
+            // 应用缩放
+            scale = newScale;
+            updateZoomDisplay();
+            
+            // 调整偏移量以保持鼠标位置不变
+            offsetX = mouseX - imgPosBefore.x * scale;
+            offsetY = mouseY - imgPosBefore.y * scale;
+            
+            drawImage();
+            drawGrid();
+        });
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '+') {
+                if (scale < 16) {
+                    scale *= 1.2;
+                    updateZoomDisplay();
+                    drawImage();
+                    drawGrid();
+                }
+            } else if (e.key === '-') {
+                if (scale > 0.1) {
+                    scale /= 1.2;
+                    updateZoomDisplay();
+                    drawImage();
+                    drawGrid();
+                }
+            } else if (e.key === '0') {
+                if (img) {
+                    scale = 1.0;
+                    offsetX = 0;
+                    offsetY = 0;
+                    updateZoomDisplay();
+                    drawImage();
+                    drawGrid();
+                }
+            } else if (e.key.toLowerCase() === 'g') {
+                showGrid = !showGrid;
+                toggleGridBtn.innerHTML = showGrid ? '<span>网格: 开</span>' : '<span>网格: 关</span>';
+                gridStatus.textContent = showGrid ? '开启' : '关闭';
+                drawGrid();
+            }
+        });
+        
+        // 初始化
+        window.addEventListener('load', () => {
+            initCanvas();
+            // 加载示例图像
+            setTimeout(() => {
+                if (!img) {
+                    loadImage('https://picsum.photos/800/600?random=1', 'sample.jpg', 'jpg');
+                }
+            }, 1000);
+        });
+        
+        window.addEventListener('resize', () => {
+            initCanvas();
+        });
+    </script>
+</body>
+</html>

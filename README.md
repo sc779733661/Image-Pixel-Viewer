@@ -1,8 +1,11 @@
 # 图像像素查看工具 (Image Pixel Viewer)
 
-一个功能强大的基于浏览器的图像像素查看工具，支持多种图像格式，可放大至单个像素级别，实时显示像素坐标、RGB值和尺寸信息。
+> **声明 / Credits**
+> 本项目代码及文档由 deepseek和yuanbao协助生成与维护。
 
-<https://via.placeholder.com/800x400/2c3e50/ffffff?text=Image+Pixel+Viewer+Screenshot>
+一个功能强大的基于浏览器的图像像素查看工具，支持多种图像格式，可放大至单个像素级别，实时显示像素坐标、RGB值和尺寸信息。(因为个人从事计算机视觉和机器人感知方向，有时需要一个像素查看工具，但现有的发现都不好用，于是参考一些工具，用大模型生成一个算了)
+
+[https://via.placeholder.com/800x400/2c3e50/ffffff?text=Image+Pixel+Viewer+Screenshot](https://via.placeholder.com/800x400/2c3e50/ffffff?text=Image+Pixel+Viewer+Screenshot)
 
 ## 🌟 主要特性
 
